@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: sparcblog-ai-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: free
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        value: sparcblog
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: WORDPRESS_SITE_URL
+        sync: false
+      - key: WORDPRESS_USERNAME
+        sync: false
+      - key: WORDPRESS_APP_PASSWORD
+        sync: false

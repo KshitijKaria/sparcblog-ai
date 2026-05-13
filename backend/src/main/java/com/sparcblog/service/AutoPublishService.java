@@ -21,12 +21,15 @@ public class AutoPublishService {
     private final NewsFetchService newsFetchService;
     private final DraftService draftService;
     private final RawArticleRepository articleRepository;
+    private final WordPressPublishService wordPressPublishService;
 
     public AutoPublishService(NewsFetchService newsFetchService, DraftService draftService,
-                              RawArticleRepository articleRepository) {
+                              RawArticleRepository articleRepository,
+                              WordPressPublishService wordPressPublishService) {
         this.newsFetchService = newsFetchService;
         this.draftService = draftService;
         this.articleRepository = articleRepository;
+        this.wordPressPublishService = wordPressPublishService;
     }
 
     public void runFullPipeline() {
@@ -52,21 +55,27 @@ public class AutoPublishService {
             BlogDraft draft = draftService.generateDraft(request);
             log.info("Draft generated: \"{}\"", draft.getTitle());
 
-            // Step 4: Auto-publish it
+            // Step 4: Auto-publish internally
             log.info("Step 3: Auto-publishing draft...");
-            draft.setStatus(DraftStatus.PUBLISHED);
-            draft.setPublishedAt(LocalDateTime.now());
-            draft.setUpdatedAt(LocalDateTime.now());
-            // Save is handled via the service but we need direct repo access for auto-publish
-            // So we use the status update path
             com.sparcblog.dto.StatusUpdateRequest statusReq = new com.sparcblog.dto.StatusUpdateRequest();
             statusReq.setStatus("PUBLISHED");
-            draftService.updateStatus(draft.getId(), statusReq);
+            draft = draftService.updateStatus(draft.getId(), statusReq);
+
+            // Step 5: Publish to WordPress
+            if (wordPressPublishService.isConfigured()) {
+                log.info("Step 4: Publishing to WordPress...");
+                String wpUrl = wordPressPublishService.publish(draft);
+                if (wpUrl != null) {
+                    log.info("WordPress publish successful: {}", wpUrl);
+                }
+            } else {
+                log.info("WordPress not configured — skipping WordPress publish");
+            }
 
             log.info("=== AUTOPUBLISH COMPLETE: \"{}\" is now live ===", draft.getTitle());
 
         } catch (Exception e) {
-            log.error("Autopublish pipeline failed at draft generation: {}", e.getMessage(), e);
+            log.error("Autopublish pipeline failed: {}", e.getMessage(), e);
         }
     }
 }
