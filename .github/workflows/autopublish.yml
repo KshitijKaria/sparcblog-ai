@@ -2,8 +2,8 @@ name: Daily Auto-Publish
 
 on:
   schedule:
-    # 9 AM ET = 1 PM UTC
-    - cron: '0 13 * * *'
+    # 2:25 PM ET = 6:25 PM UTC
+    - cron: '25 18 * * *'
   workflow_dispatch: # allows manual trigger from GitHub UI
 
 jobs:
