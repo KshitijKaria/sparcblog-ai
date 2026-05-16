@@ -71,17 +71,21 @@ public class NewsFetchService {
 
     @PostConstruct
     public void seedDefaultSources() {
-        if (sourceRepository.count() == 0) {
-            log.info("Seeding default news sources...");
-            List<NewsSource> defaults = List.of(
-                    createSource("Payments Dive", "https://www.paymentsdive.com/feeds/news/", "RSS", "PAYMENTS"),
-                    createSource("Finextra", "https://www.finextra.com/rss/headlines.aspx", "RSS", "FINTECH"),
-                    createSource("PYMNTS", "https://www.pymnts.com/feed/", "RSS", "PAYMENTS"),
-                    createSource("AccountingToday", "https://feeds.arizent.com/accounting-today", "RSS", "AP_AUTOMATION"),
-                    createSource("The Paypers", "https://thepaypers.com/rss", "RSS", "PAYMENTS")
-            );
-            sourceRepository.saveAll(defaults);
-            log.info("Seeded {} default news sources", defaults.size());
+        try {
+            if (sourceRepository.count() == 0) {
+                log.info("Seeding default news sources...");
+                List<NewsSource> defaults = List.of(
+                        createSource("Payments Dive", "https://www.paymentsdive.com/feeds/news/", "RSS", "PAYMENTS"),
+                        createSource("Finextra", "https://www.finextra.com/rss/headlines.aspx", "RSS", "FINTECH"),
+                        createSource("PYMNTS", "https://www.pymnts.com/feed/", "RSS", "PAYMENTS"),
+                        createSource("AccountingToday", "https://feeds.arizent.com/accounting-today", "RSS", "AP_AUTOMATION"),
+                        createSource("The Paypers", "https://thepaypers.com/rss", "RSS", "PAYMENTS")
+                );
+                sourceRepository.saveAll(defaults);
+                log.info("Seeded {} default news sources", defaults.size());
+            }
+        } catch (Exception e) {
+            log.warn("Could not seed default sources (DB may not be ready yet): {}", e.getMessage());
         }
     }
 
